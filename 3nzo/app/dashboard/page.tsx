@@ -512,24 +512,24 @@ export default function DashboardPage() {
   const [kpis, setKpis] = useState<DashboardKPIs | null>(null);
   const [brands, setBrands] = useState<BrandPerformance[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [columns, setColumns] = useState<ColumnConfig[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("dashboard-columns");
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch {
-          return defaultColumns;
-        }
-      }
-    }
-    return defaultColumns;
-  });
+  const [columns, setColumns] = useState<ColumnConfig[]>(defaultColumns);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("dashboard-columns", JSON.stringify(columns));
+    const saved = localStorage.getItem("dashboard-columns");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length === defaultColumns.length) {
+          setColumns(parsed);
+        }
+      } catch {
+        // Invalid JSON, use defaults
+      }
     }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("dashboard-columns", JSON.stringify(columns));
   }, [columns]);
 
   useEffect(() => {
