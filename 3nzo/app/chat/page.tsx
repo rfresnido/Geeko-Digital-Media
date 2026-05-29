@@ -110,7 +110,7 @@ What would you like to know?`,
               alt="3nzo"
               width={36}
               height={36}
-              className="rounded-xl shadow-md"
+              className="rounded-xl shadow-md object-cover aspect-square"
             />
             <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 border border-white"></div>
           </div>
@@ -142,7 +142,7 @@ What would you like to know?`,
                   alt="3nzo"
                   width={28}
                   height={28}
-                  className="rounded-lg shadow-sm shrink-0"
+                  className="rounded-lg shadow-sm shrink-0 object-cover aspect-square"
                 />
               ) : (
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg shadow-sm bg-gradient-to-br from-geeko-navy to-slate-700 text-white">
@@ -179,7 +179,7 @@ What would you like to know?`,
                 alt="3nzo"
                 width={28}
                 height={28}
-                className="rounded-lg shadow-sm shrink-0"
+                className="rounded-lg shadow-sm shrink-0 object-cover aspect-square"
               />
               <div className="chat-bubble-assistant">
                 <div className="flex items-center gap-2">
