@@ -7,6 +7,8 @@ import {
   Target,
   BarChart3,
   AlertTriangle,
+  ArrowUpRight,
+  Sparkles,
 } from "lucide-react";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
 
@@ -28,10 +30,10 @@ const mockKPIs = {
 };
 
 const mockBrandData = [
-  { brand: "Amazing Lash Studio", spend: 4521.34, clicks: 16234, convs: 312, searchIS: 78.2 },
-  { brand: "Paused Studio", spend: 3890.12, clicks: 14567, convs: 289, searchIS: 71.5 },
-  { brand: "Radiant Waxing", spend: 2345.67, clicks: 8765, convs: 178, searchIS: 68.3 },
-  { brand: "Drybar", spend: 1693.54, clicks: 6112, convs: 113, searchIS: 82.1 },
+  { brand: "Amazing Lash Studio", spend: 4521.34, clicks: 16234, convs: 312, searchIS: 78.2, trend: "up" },
+  { brand: "Paused Studio", spend: 3890.12, clicks: 14567, convs: 289, searchIS: 71.5, trend: "up" },
+  { brand: "Radiant Waxing", spend: 2345.67, clicks: 8765, convs: 178, searchIS: 68.3, trend: "down" },
+  { brand: "Drybar", spend: 1693.54, clicks: 6112, convs: 113, searchIS: 82.1, trend: "up" },
 ];
 
 function MetricCard({
@@ -40,12 +42,14 @@ function MetricCard({
   change,
   icon: Icon,
   format = "number",
+  featured = false,
 }: {
   title: string;
   value: number;
   change?: number;
   icon: React.ElementType;
   format?: "number" | "currency" | "percent";
+  featured?: boolean;
 }) {
   const formattedValue =
     format === "currency"
@@ -57,22 +61,46 @@ function MetricCard({
   const isPositive = change && change > 0;
   const isNegative = change && change < 0;
 
+  if (featured) {
+    return (
+      <div className="card-gradient col-span-2">
+        <div className="flex items-start justify-between">
+          <div className="icon-container-gradient">
+            <Icon className="h-6 w-6" />
+          </div>
+          {change !== undefined && (
+            <div className="flex items-center gap-1 rounded-full bg-white/20 backdrop-blur px-3 py-1 text-sm font-semibold text-white">
+              {isPositive && <TrendingUp className="h-4 w-4" />}
+              {isNegative && <TrendingDown className="h-4 w-4" />}
+              {isPositive && "+"}
+              {change.toFixed(1)}%
+            </div>
+          )}
+        </div>
+        <div className="mt-6">
+          <p className="stat-value-light">{formattedValue}</p>
+          <p className="stat-label-light mt-1">{title}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="card-metric">
-      <div className="flex items-center justify-between">
-        <div className="rounded-lg bg-geeko-teal/10 p-2">
-          <Icon className="h-5 w-5 text-geeko-teal" />
+      <div className="flex items-start justify-between">
+        <div className="icon-container">
+          <Icon className="h-5 w-5" />
         </div>
         {change !== undefined && (
-          <div className={isPositive ? "stat-change-positive" : isNegative ? "stat-change-negative" : "text-muted-foreground text-sm"}>
-            {isPositive && <TrendingUp className="inline h-4 w-4 mr-1" />}
-            {isNegative && <TrendingDown className="inline h-4 w-4 mr-1" />}
+          <div className={isPositive ? "stat-change-positive" : isNegative ? "stat-change-negative" : "text-slate-400 text-sm"}>
+            {isPositive && <TrendingUp className="h-3 w-3" />}
+            {isNegative && <TrendingDown className="h-3 w-3" />}
             {isPositive && "+"}
             {change.toFixed(1)}%
           </div>
         )}
       </div>
-      <div className="mt-4">
+      <div className="mt-5">
         <p className="stat-value">{formattedValue}</p>
         <p className="stat-label mt-1">{title}</p>
       </div>
@@ -90,50 +118,61 @@ function CompetitiveCard({
   lostRank: number;
 }) {
   return (
-    <div className="card-metric">
-      <div className="flex items-center gap-2 mb-4">
-        <BarChart3 className="h-5 w-5 text-geeko-teal" />
-        <h3 className="font-semibold text-geeko-navy">Competitive Metrics</h3>
+    <div className="card-metric col-span-2">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="icon-container">
+            <BarChart3 className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-geeko-navy">Competitive Metrics</h3>
+            <p className="text-xs text-slate-400">Search impression share breakdown</p>
+          </div>
+        </div>
+        <span className="badge-success">
+          <Sparkles className="h-3 w-3" />
+          Good standing
+        </span>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-5">
         <div>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-muted-foreground">Search Impression Share</span>
-            <span className="font-medium text-geeko-navy">{searchIS}%</span>
+          <div className="flex justify-between text-sm mb-2">
+            <span className="text-slate-600 font-medium">Search Impression Share</span>
+            <span className="font-bold text-geeko-teal">{searchIS}%</span>
           </div>
-          <div className="h-2 bg-muted rounded-full overflow-hidden">
+          <div className="progress-bar">
             <div
-              className="h-full bg-geeko-teal rounded-full"
+              className="progress-fill bg-gradient-to-r from-geeko-teal to-teal-400"
               style={{ width: `${searchIS}%` }}
             />
           </div>
         </div>
 
         <div>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-muted-foreground flex items-center gap-1">
-              <AlertTriangle className="h-3 w-3 text-geeko-orange" />
+          <div className="flex justify-between text-sm mb-2">
+            <span className="text-slate-600 font-medium flex items-center gap-2">
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
               Lost IS (Budget)
             </span>
-            <span className="font-medium text-geeko-orange">{lostBudget}%</span>
+            <span className="font-bold text-amber-600">{lostBudget}%</span>
           </div>
-          <div className="h-2 bg-muted rounded-full overflow-hidden">
+          <div className="progress-bar">
             <div
-              className="h-full bg-geeko-orange rounded-full"
+              className="progress-fill bg-gradient-to-r from-amber-400 to-amber-500"
               style={{ width: `${lostBudget}%` }}
             />
           </div>
         </div>
 
         <div>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-muted-foreground">Lost IS (Rank)</span>
-            <span className="font-medium text-geeko-navy">{lostRank}%</span>
+          <div className="flex justify-between text-sm mb-2">
+            <span className="text-slate-600 font-medium">Lost IS (Rank)</span>
+            <span className="font-bold text-slate-600">{lostRank}%</span>
           </div>
-          <div className="h-2 bg-muted rounded-full overflow-hidden">
+          <div className="progress-bar">
             <div
-              className="h-full bg-geeko-sky rounded-full"
+              className="progress-fill bg-gradient-to-r from-slate-400 to-slate-500"
               style={{ width: `${lostRank}%` }}
             />
           </div>
@@ -145,13 +184,21 @@ function CompetitiveCard({
 
 export default function DashboardPage() {
   return (
-    <div className="p-8">
+    <div className="p-8 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-geeko-navy">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Last 7 days • All brands
-        </p>
+      <div className="flex items-start justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-geeko-navy to-geeko-teal bg-clip-text text-transparent">
+            Dashboard
+          </h1>
+          <p className="text-slate-500 mt-1">
+            Last 7 days • All brands
+          </p>
+        </div>
+        <button className="btn-primary">
+          <ArrowUpRight className="h-4 w-4" />
+          Export Report
+        </button>
       </div>
 
       {/* KPI Grid */}
@@ -162,6 +209,7 @@ export default function DashboardPage() {
           change={mockKPIs.spendChange}
           icon={DollarSign}
           format="currency"
+          featured
         />
         <MetricCard
           title="Impressions"
@@ -184,7 +232,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Second Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
         <MetricCard
           title="Avg. CPC"
           value={mockKPIs.avgCPC}
@@ -206,29 +254,58 @@ export default function DashboardPage() {
 
       {/* Brand Performance Table */}
       <div className="card-metric">
-        <h3 className="font-semibold text-geeko-navy mb-4">Performance by Brand</h3>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-semibold text-geeko-navy">Performance by Brand</h3>
+            <p className="text-sm text-slate-400">Click on a row to see campaign details</p>
+          </div>
+          <button className="btn-secondary text-sm py-2">
+            View All
+          </button>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-border">
-                <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Brand</th>
-                <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Spend</th>
-                <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Clicks</th>
-                <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Conversions</th>
-                <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Search IS</th>
+              <tr className="border-b border-slate-100">
+                <th className="table-header">Brand</th>
+                <th className="table-header text-right">Spend</th>
+                <th className="table-header text-right">Clicks</th>
+                <th className="table-header text-right">Conversions</th>
+                <th className="table-header text-right">Search IS</th>
+                <th className="table-header text-right">Trend</th>
               </tr>
             </thead>
             <tbody>
               {mockBrandData.map((row) => (
-                <tr key={row.brand} className="border-b border-border last:border-0 hover:bg-muted/50">
-                  <td className="py-3 px-4 font-medium text-geeko-navy">{row.brand}</td>
-                  <td className="py-3 px-4 text-right">{formatCurrency(row.spend)}</td>
-                  <td className="py-3 px-4 text-right">{formatNumber(row.clicks)}</td>
-                  <td className="py-3 px-4 text-right">{formatNumber(row.convs)}</td>
-                  <td className="py-3 px-4 text-right">
-                    <span className={row.searchIS >= 75 ? "text-geeko-lime" : row.searchIS >= 60 ? "text-geeko-orange" : "text-red-500"}>
+                <tr key={row.brand} className="table-row cursor-pointer">
+                  <td className="table-cell">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-geeko-teal/10 to-geeko-sky/10 flex items-center justify-center text-geeko-teal font-bold text-sm">
+                        {row.brand.charAt(0)}
+                      </div>
+                      <span className="font-semibold text-geeko-navy">{row.brand}</span>
+                    </div>
+                  </td>
+                  <td className="table-cell text-right font-semibold">{formatCurrency(row.spend)}</td>
+                  <td className="table-cell text-right text-slate-600">{formatNumber(row.clicks)}</td>
+                  <td className="table-cell text-right text-slate-600">{formatNumber(row.convs)}</td>
+                  <td className="table-cell text-right">
+                    <span className={`font-semibold ${row.searchIS >= 75 ? "text-emerald-600" : row.searchIS >= 60 ? "text-amber-600" : "text-rose-600"}`}>
                       {row.searchIS}%
                     </span>
+                  </td>
+                  <td className="table-cell text-right">
+                    {row.trend === "up" ? (
+                      <span className="stat-change-positive">
+                        <TrendingUp className="h-3 w-3" />
+                        Up
+                      </span>
+                    ) : (
+                      <span className="stat-change-negative">
+                        <TrendingDown className="h-3 w-3" />
+                        Down
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}
