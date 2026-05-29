@@ -1,5 +1,6 @@
-export const dynamic = "force-dynamic";
+"use client";
 
+import { useState, useEffect } from "react";
 import {
   TrendingUp,
   TrendingDown,
@@ -11,9 +12,45 @@ import {
   AlertTriangle,
   ArrowUpRight,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
-import { getDashboardKPIs, getBrandPerformance, type BrandPerformance } from "@/lib/dashboard-data";
+import { DateRangePicker } from "@/components/date-range-picker";
+
+interface DashboardKPIs {
+  totalSpend: number;
+  spendChange: number;
+  impressions: number;
+  impressionsChange: number;
+  clicks: number;
+  clicksChange: number;
+  conversions: number;
+  conversionsChange: number;
+  avgCPC: number;
+  avgCTR: number;
+  searchIS: number;
+  lostISBudget: number;
+  lostISRank: number;
+}
+
+interface BrandPerformance {
+  brand: string;
+  spend: number;
+  clicks: number;
+  convs: number;
+  searchIS: number;
+  trend: "up" | "down" | "flat";
+}
+
+function getDefaultDates() {
+  const end = new Date();
+  const start = new Date();
+  start.setDate(end.getDate() - 6);
+  return {
+    startDate: start.toISOString().split("T")[0],
+    endDate: end.toISOString().split("T")[0],
+  };
+}
 
 function MetricCard({
   title,
@@ -165,6 +202,16 @@ function CompetitiveCard({
 }
 
 function BrandTable({ brands }: { brands: BrandPerformance[] }) {
+  if (brands.length === 0) {
+    return (
+      <div className="card-metric">
+        <div className="text-center py-8 text-slate-500">
+          <p className="text-sm">No data for selected date range</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="card-metric">
       <div className="flex items-center justify-between mb-4">
@@ -231,11 +278,45 @@ function BrandTable({ brands }: { brands: BrandPerformance[] }) {
   );
 }
 
-export default async function DashboardPage() {
-  const [kpis, brands] = await Promise.all([
-    getDashboardKPIs(7),
-    getBrandPerformance(7),
-  ]);
+export default function DashboardPage() {
+  const [dateRange, setDateRange] = useState(getDefaultDates);
+  const [kpis, setKpis] = useState<DashboardKPIs | null>(null);
+  const [brands, setBrands] = useState<BrandPerformance[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `/api/dashboard?startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`
+        );
+        if (!response.ok) throw new Error("Failed to fetch");
+        const data = await response.json();
+        setKpis(data.kpis);
+        setBrands(data.brands);
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchData();
+  }, [dateRange]);
+
+  const handleDateChange = (startDate: string, endDate: string) => {
+    setDateRange({ startDate, endDate });
+  };
+
+  if (isLoading || !kpis) {
+    return (
+      <div className="p-5 max-w-6xl mx-auto">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-geeko-teal" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-5 max-w-6xl mx-auto">
@@ -246,13 +327,20 @@ export default async function DashboardPage() {
             Dashboard
           </h1>
           <p className="text-slate-500 text-xs mt-0.5">
-            Last 7 days • All brands
+            All brands
           </p>
         </div>
-        <button className="btn-primary">
-          <ArrowUpRight className="h-3 w-3" />
-          Export
-        </button>
+        <div className="flex items-center gap-2">
+          <DateRangePicker
+            startDate={dateRange.startDate}
+            endDate={dateRange.endDate}
+            onChange={handleDateChange}
+          />
+          <button className="btn-primary">
+            <ArrowUpRight className="h-3 w-3" />
+            Export
+          </button>
+        </div>
       </div>
 
       {/* KPI Grid */}
