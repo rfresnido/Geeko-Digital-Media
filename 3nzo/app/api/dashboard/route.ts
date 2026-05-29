@@ -60,14 +60,22 @@ export async function GET(request: NextRequest) {
         AND b.is_mcc = FALSE
     `;
 
-    // Brand performance for current period
+    // Brand performance with all metrics
     const currentBrands = await sql`
       SELECT
         b.brand_name,
-        COALESCE(ROUND(SUM(f.cost_micros) / 1000000.0, 2), 0) AS spend,
+        COALESCE(SUM(f.impressions), 0) AS impressions,
         COALESCE(SUM(f.clicks), 0) AS clicks,
+        COALESCE(ROUND(SUM(f.cost_micros) / 1000000.0, 2), 0) AS spend,
         COALESCE(ROUND(SUM(f.conversions), 2), 0) AS conversions,
-        COALESCE(ROUND(AVG(f.search_impression_share) * 100, 2), 0) AS search_is
+        COALESCE(ROUND(SUM(f.clicks) * 100.0 / NULLIF(SUM(f.impressions), 0), 2), 0) AS ctr,
+        COALESCE(ROUND(SUM(f.cost_micros) / 1000000.0 / NULLIF(SUM(f.clicks), 0), 2), 0) AS cpc,
+        COALESCE(ROUND(SUM(f.cost_micros) / 1000000.0 / NULLIF(SUM(f.conversions), 0), 2), 0) AS cpa,
+        COALESCE(ROUND(SUM(f.conversions) * 100.0 / NULLIF(SUM(f.clicks), 0), 2), 0) AS cvr,
+        COALESCE(ROUND(AVG(f.search_impression_share) * 100, 2), 0) AS search_is,
+        COALESCE(ROUND(AVG(f.search_lost_is_budget) * 100, 2), 0) AS lost_is_budget,
+        COALESCE(ROUND(AVG(f.search_lost_is_rank) * 100, 2), 0) AS lost_is_rank,
+        COUNT(DISTINCT f.campaign_id) AS campaign_count
       FROM fact_performance f
       JOIN dim_brands b ON f.brand_id = b.brand_id
       WHERE f.data_date BETWEEN ${startDate}::date AND ${endDate}::date
@@ -75,6 +83,21 @@ export async function GET(request: NextRequest) {
       GROUP BY b.brand_name
       ORDER BY spend DESC
     `;
+
+    // Get campaign details per brand
+    const campaignDetails = await sql`
+      SELECT
+        b.brand_name,
+        COUNT(*) FILTER (WHERE c.status = 'ENABLED') AS active_campaigns,
+        COUNT(*) FILTER (WHERE c.status = 'PAUSED') AS paused_campaigns,
+        COALESCE(ROUND(SUM(c.daily_budget_micros) / 1000000.0, 2), 0) AS total_daily_budget
+      FROM dim_campaigns c
+      JOIN dim_brands b ON c.brand_id = b.brand_id
+      WHERE b.is_mcc = FALSE
+      GROUP BY b.brand_name
+    `;
+
+    const campaignMap = new Map(campaignDetails.map((c) => [c.brand_name, c]));
 
     // Brand performance for previous period
     const prevBrands = await sql`
@@ -115,13 +138,24 @@ export async function GET(request: NextRequest) {
       const currentSpend = Number(row.spend);
       const prevSpend = prevSpendMap.get(row.brand_name) || 0;
       const trend = currentSpend > prevSpend ? "up" : currentSpend < prevSpend ? "down" : "flat";
+      const campaignInfo = campaignMap.get(row.brand_name);
 
       return {
         brand: String(row.brand_name),
-        spend: currentSpend,
+        impressions: Number(row.impressions),
         clicks: Number(row.clicks),
-        convs: Number(row.conversions),
+        spend: currentSpend,
+        conversions: Number(row.conversions),
+        ctr: Number(row.ctr),
+        cpc: Number(row.cpc),
+        cpa: Number(row.cpa),
+        cvr: Number(row.cvr),
         searchIS: Number(row.search_is),
+        lostISBudget: Number(row.lost_is_budget),
+        lostISRank: Number(row.lost_is_rank),
+        activeCampaigns: Number(campaignInfo?.active_campaigns || 0),
+        pausedCampaigns: Number(campaignInfo?.paused_campaigns || 0),
+        totalDailyBudget: Number(campaignInfo?.total_daily_budget || 0),
         trend,
       };
     });
