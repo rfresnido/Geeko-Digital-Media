@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Send, Bot, User, Loader2, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { Send, User, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -104,9 +105,13 @@ What would you like to know?`,
       <div className="border-b border-slate-200/50 bg-white/70 backdrop-blur-xl px-5 py-3">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl animated-gradient text-white shadow-md shadow-teal-200">
-              <Bot className="h-4 w-4" />
-            </div>
+            <Image
+              src="/geeko-avatar.png"
+              alt="3nzo"
+              width={36}
+              height={36}
+              className="rounded-xl shadow-md"
+            />
             <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 border border-white"></div>
           </div>
           <div>
@@ -131,20 +136,19 @@ What would you like to know?`,
                 message.role === "user" && "flex-row-reverse"
               )}
             >
-              <div
-                className={cn(
-                  "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg shadow-sm",
-                  message.role === "assistant"
-                    ? "bg-gradient-to-br from-geeko-teal to-teal-600 text-white"
-                    : "bg-gradient-to-br from-geeko-navy to-slate-700 text-white"
-                )}
-              >
-                {message.role === "assistant" ? (
-                  <Sparkles className="h-3.5 w-3.5" />
-                ) : (
+              {message.role === "assistant" ? (
+                <Image
+                  src="/geeko-avatar.png"
+                  alt="3nzo"
+                  width={28}
+                  height={28}
+                  className="rounded-lg shadow-sm shrink-0"
+                />
+              ) : (
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg shadow-sm bg-gradient-to-br from-geeko-navy to-slate-700 text-white">
                   <User className="h-3.5 w-3.5" />
-                )}
-              </div>
+                </div>
+              )}
               <div
                 className={cn(
                   "max-w-[75%]",
@@ -170,9 +174,13 @@ What would you like to know?`,
 
           {isLoading && (
             <div className="flex gap-3">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-geeko-teal to-teal-600 text-white shadow-sm">
-                <Sparkles className="h-3.5 w-3.5" />
-              </div>
+              <Image
+                src="/geeko-avatar.png"
+                alt="3nzo"
+                width={28}
+                height={28}
+                className="rounded-lg shadow-sm shrink-0"
+              />
               <div className="chat-bubble-assistant">
                 <div className="flex items-center gap-2">
                   <Loader2 className="h-3 w-3 animate-spin text-geeko-teal" />

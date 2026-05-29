@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -25,19 +26,15 @@ export function Sidebar() {
   return (
     <aside className="flex w-56 flex-col bg-white/70 backdrop-blur-xl border-r border-slate-200/50">
       {/* Logo */}
-      <div className="flex h-14 items-center gap-3 px-4">
-        <div className="relative">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg animated-gradient text-white font-bold text-xs shadow-md shadow-teal-200">
-            3n
-          </div>
-          <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 border border-white"></div>
-        </div>
-        <div>
-          <h1 className="text-sm font-bold bg-gradient-to-r from-geeko-navy to-geeko-teal bg-clip-text text-transparent">
-            3nzo
-          </h1>
-          <p className="text-[10px] text-slate-400 font-medium">Geeko Digital Media</p>
-        </div>
+      <div className="flex h-16 items-center px-4 border-b border-slate-100">
+        <Image
+          src="/geeko-logo.png"
+          alt="Geeko Digital Media"
+          width={180}
+          height={45}
+          className="object-contain"
+          priority
+        />
       </div>
 
       {/* Navigation */}
