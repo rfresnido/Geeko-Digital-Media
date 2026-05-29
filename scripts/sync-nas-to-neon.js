@@ -1,8 +1,11 @@
 /**
- * NAS → Neon Sync Script
+ * NAS → Neon Star Schema Sync Script
  *
- * Syncs google_ads_metrics from local NAS PostgreSQL to Neon cloud replica.
- * Run via Synology Task Scheduler after ingest.js completes.
+ * Reads google_ads_metrics from NAS (slack_channel_matrix DB) and
+ * transforms the flat rows into the 3nzo star schema in Neon:
+ *   dim_campaigns, dim_ad_groups, fact_performance
+ *
+ * Run on Synology via Task Scheduler (daily, after ingest.js completes).
  *
  * Environment Variables:
  *   NAS_DB_URL   - Local NAS PostgreSQL connection string
@@ -17,164 +20,233 @@ const NAS_DB_URL = process.env.NAS_DB_URL || 'postgresql://geeky_admin:password@
 const NEON_DB_URL = process.env.NEON_DB_URL;
 
 if (!NEON_DB_URL) {
-    console.error('[sync] ERROR: NEON_DB_URL environment variable is required');
-    process.exit(1);
+      console.error('[sync] ERROR: NEON_DB_URL environment variable is required');
+      process.exit(1);
 }
 
 // Connection pools
 const nasPool = new Pool({ connectionString: NAS_DB_URL });
 const neonPool = new Pool({
-    connectionString: NEON_DB_URL,
-    ssl: { rejectUnauthorized: false }
+      connectionString: NEON_DB_URL,
+      ssl: { rejectUnauthorized: false }
 });
 
 /**
- * Get the latest fetched_at timestamp from Neon to determine sync point
+ * Get the most recent report_date already in fact_performance
+ * so we only sync new/changed days.
  */
-async function getLastSyncTimestamp() {
-    try {
-        const result = await neonPool.query(
-            'SELECT MAX(fetched_at) as last_sync FROM google_ads_metrics'
-        );
-        return result.rows[0]?.last_sync || null;
-    } catch (error) {
-        // Table might not exist yet
-        console.log('[sync] No existing data in Neon, will do full sync');
-        return null;
-    }
+async function getLastSyncDate() {
+      try {
+              const result = await neonPool.query(
+                        'SELECT MAX(report_date) AS last_date FROM fact_performance'
+                      );
+              return result.rows[0]?.last_date || null;
+      } catch (error) {
+              console.log('[sync] No existing fact_performance data — doing full sync');
+              return null;
+      }
 }
 
 /**
- * Fetch new rows from NAS since last sync
+ * Fetch rows from NAS google_ads_metrics table.
+ * If lastDate is provided, only fetch rows newer than that date.
  */
-async function fetchNewRowsFromNAS(since) {
-    let query, params;
-
-    if (since) {
-        query = `
-            SELECT brand, customer_id, report_date, campaign_id, campaign_name,
-                   ad_group_id, ad_group_name, impressions, clicks, cost_micros,
-                   conversions, conv_value, fetched_at
-            FROM google_ads_metrics
-            WHERE fetched_at > $1
-            ORDER BY fetched_at ASC
-        `;
-        params = [since];
-    } else {
-        // Full sync
-        query = `
-            SELECT brand, customer_id, report_date, campaign_id, campaign_name,
-                   ad_group_id, ad_group_name, impressions, clicks, cost_micros,
-                   conversions, conv_value, fetched_at
-            FROM google_ads_metrics
-            ORDER BY fetched_at ASC
-        `;
-        params = [];
-    }
-
-    const result = await nasPool.query(query, params);
-    return result.rows;
+async function fetchRowsFromNAS(lastDate) {
+      let query, params;
+      if (lastDate) {
+              query = `
+                    SELECT brand, customer_id, report_date,
+                                 campaign_id, campaign_name,
+                                              ad_group_id, ad_group_name,
+                                                           impressions, clicks, cost_micros,
+                                                                        conversions, conv_value
+                                                                              FROM google_ads_metrics
+                                                                                    WHERE report_date > $1
+                                                                                          ORDER BY report_date ASC
+                                                                                              `;
+              params = [lastDate];
+      } else {
+              query = `
+                    SELECT brand, customer_id, report_date,
+                                 campaign_id, campaign_name,
+                                              ad_group_id, ad_group_name,
+                                                           impressions, clicks, cost_micros,
+                                                                        conversions, conv_value
+                                                                              FROM google_ads_metrics
+                                                                                    ORDER BY report_date ASC
+                                                                                        `;
+              params = [];
+      }
+      const result = await nasPool.query(query, params);
+      return result.rows;
 }
 
 /**
- * Upsert rows into Neon
+ * Look up brand_id from dim_brands by matching on brand name or customer_id.
+ * Returns null if not found (row will be skipped).
  */
-async function upsertToNeon(rows) {
-    if (rows.length === 0) {
-        console.log('[sync] No new rows to sync');
-        return 0;
-    }
+async function resolveBrandId(client, brandName, customerId) {
+      // Try customer_id first (most reliable)
+  if (customerId) {
+          const r = await client.query(
+                    'SELECT brand_id FROM dim_brands WHERE customer_id = $1 LIMIT 1',
+                    [String(customerId)]
+                  );
+          if (r.rows.length > 0) return r.rows[0].brand_id;
+  }
+      // Fall back to brand name (case-insensitive partial match)
+  if (brandName) {
+          const r = await client.query(
+                    "SELECT brand_id FROM dim_brands WHERE LOWER(brand_name) LIKE LOWER('%' || $1 || '%') LIMIT 1",
+                    [brandName]
+                  );
+          if (r.rows.length > 0) return r.rows[0].brand_id;
+  }
+      return null;
+}
 
-    const client = await neonPool.connect();
-    let syncedCount = 0;
+/**
+ * Upsert a campaign into dim_campaigns; return its campaign_id.
+ */
+async function upsertCampaign(client, campaignId, brandId, campaignName) {
+      await client.query(`
+          INSERT INTO dim_campaigns (campaign_id, brand_id, campaign_name, status, updated_at)
+              VALUES ($1, $2, $3, 'ACTIVE', NOW())
+                  ON CONFLICT (campaign_id) DO UPDATE SET
+                        brand_id      = EXCLUDED.brand_id,
+                              campaign_name = EXCLUDED.campaign_name,
+                                    updated_at    = NOW()
+                                      `, [String(campaignId), brandId, campaignName]);
+      return String(campaignId);
+}
 
-    try {
-        await client.query('BEGIN');
+/**
+ * Upsert an ad group into dim_ad_groups; return its ad_group_id.
+ */
+async function upsertAdGroup(client, adGroupId, campaignId, adGroupName) {
+      await client.query(`
+          INSERT INTO dim_ad_groups (ad_group_id, campaign_id, ad_group_name, status, updated_at)
+              VALUES ($1, $2, $3, 'ACTIVE', NOW())
+                  ON CONFLICT (ad_group_id) DO UPDATE SET
+                        campaign_id    = EXCLUDED.campaign_id,
+                              ad_group_name  = EXCLUDED.ad_group_name,
+                                    updated_at     = NOW()
+                                      `, [String(adGroupId), String(campaignId), adGroupName]);
+      return String(adGroupId);
+}
 
-        const upsertQuery = `
-            INSERT INTO google_ads_metrics (
-                brand, customer_id, report_date, campaign_id, campaign_name,
-                ad_group_id, ad_group_name, impressions, clicks, cost_micros,
-                conversions, conv_value, fetched_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-            ON CONFLICT (customer_id, report_date, campaign_id, ad_group_id)
-            DO UPDATE SET
-                brand = EXCLUDED.brand,
-                campaign_name = EXCLUDED.campaign_name,
-                ad_group_name = EXCLUDED.ad_group_name,
-                impressions = EXCLUDED.impressions,
-                clicks = EXCLUDED.clicks,
-                cost_micros = EXCLUDED.cost_micros,
-                conversions = EXCLUDED.conversions,
-                conv_value = EXCLUDED.conv_value,
-                fetched_at = EXCLUDED.fetched_at
-        `;
-
-        for (const row of rows) {
-            await client.query(upsertQuery, [
-                row.brand,
-                row.customer_id,
-                row.report_date,
-                row.campaign_id,
-                row.campaign_name,
-                row.ad_group_id,
-                row.ad_group_name,
-                row.impressions,
-                row.clicks,
-                row.cost_micros,
-                row.conversions,
-                row.conv_value,
-                row.fetched_at
+/**
+ * Upsert a fact_performance row.
+ * spend = cost_micros / 1_000_000 (Google Ads stores cost in micros)
+ */
+async function upsertFact(client, row, brandId, campaignId, adGroupId) {
+      const spend = row.cost_micros ? (Number(row.cost_micros) / 1_000_000) : 0;
+      await client.query(`
+          INSERT INTO fact_performance (
+                brand_id, campaign_id, ad_group_id, report_date,
+                      impressions, clicks, spend, conversions, conv_value,
+                            updated_at
+                                )
+                                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+                                        ON CONFLICT (brand_id, campaign_id, ad_group_id, report_date) DO UPDATE SET
+                                              impressions  = EXCLUDED.impressions,
+                                                    clicks       = EXCLUDED.clicks,
+                                                          spend        = EXCLUDED.spend,
+                                                                conversions  = EXCLUDED.conversions,
+                                                                      conv_value   = EXCLUDED.conv_value,
+                                                                            updated_at   = NOW()
+                                                                              `, [
+              brandId,
+              String(campaignId),
+              String(adGroupId),
+              row.report_date,
+              Number(row.impressions) || 0,
+              Number(row.clicks) || 0,
+              spend,
+              Number(row.conversions) || 0,
+              Number(row.conv_value) || 0,
             ]);
-            syncedCount++;
-        }
-
-        await client.query('COMMIT');
-        console.log(`[sync] Successfully synced ${syncedCount} rows to Neon`);
-
-    } catch (error) {
-        await client.query('ROLLBACK');
-        console.error('[sync] Error during upsert, rolled back:', error.message);
-        throw error;
-    } finally {
-        client.release();
-    }
-
-    return syncedCount;
 }
 
 /**
  * Main sync function
  */
 async function syncNASToNeon() {
-    console.log('[sync] Starting NAS → Neon sync...');
-    const startTime = Date.now();
+      console.log('[sync] Starting NAS → Neon star schema sync...');
+      const startTime = Date.now();
 
-    try {
-        // Get last sync point
-        const lastSync = await getLastSyncTimestamp();
-        if (lastSync) {
-            console.log(`[sync] Last sync timestamp: ${lastSync.toISOString()}`);
+  try {
+          // Determine sync window
+        const lastDate = await getLastSyncDate();
+          if (lastDate) {
+                    console.log(`[sync] Incremental sync: fetching rows after ${lastDate}`);
+          } else {
+                    console.log('[sync] Full sync: fetching all rows');
+          }
+
+        // Fetch from NAS
+        const rows = await fetchRowsFromNAS(lastDate);
+          console.log(`[sync] Fetched ${rows.length} rows from NAS`);
+
+        if (rows.length === 0) {
+                  console.log('[sync] Nothing to sync. Already up to date.');
+                  return 0;
         }
 
-        // Fetch new rows from NAS
-        const newRows = await fetchNewRowsFromNAS(lastSync);
-        console.log(`[sync] Found ${newRows.length} rows to sync`);
+        // Acquire a single Neon connection for the whole batch (transactional)
+        const client = await neonPool.connect();
+          let syncedCount = 0;
+          let skippedCount = 0;
 
-        // Upsert to Neon
-        const synced = await upsertToNeon(newRows);
+        try {
+                  await client.query('BEGIN');
 
-        const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
-        console.log(`[sync] Sync complete in ${elapsed}s — ${synced} rows synced`);
+            for (const row of rows) {
+                        // Resolve brand
+                    const brandId = await resolveBrandId(client, row.brand, row.customer_id);
+                        if (!brandId) {
+                                      console.warn(`[sync] SKIP: brand not found for brand="${row.brand}", customer_id="${row.customer_id}"`);
+                                      skippedCount++;
+                                      continue;
+                        }
 
-    } catch (error) {
-        console.error('[sync] Sync failed:', error.message);
-        process.exit(1);
-    } finally {
-        await nasPool.end();
-        await neonPool.end();
-    }
+                    // Upsert dimension tables
+                    const campaignId = await upsertCampaign(client, row.campaign_id, brandId, row.campaign_name);
+                        const adGroupId  = await upsertAdGroup(client, row.ad_group_id, campaignId, row.ad_group_name);
+
+                    // Upsert fact row
+                    await upsertFact(client, row, brandId, campaignId, adGroupId);
+                        syncedCount++;
+            }
+
+            await client.query('COMMIT');
+                  console.log(`[sync] Committed ${syncedCount} rows to Neon star schema (skipped ${skippedCount})`);
+
+        } catch (error) {
+                  await client.query('ROLLBACK');
+                  console.error('[sync] ERROR during upsert, rolled back:', error.message);
+                  throw error;
+        } finally {
+                  client.release();
+        }
+
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+          console.log(`[sync] Done in ${elapsed}s`);
+          return syncedCount;
+
+  } finally {
+          await nasPool.end();
+          await neonPool.end();
+  }
 }
 
 // Run
-syncNASToNeon();
+syncNASToNeon()
+  .then(count => {
+          console.log(`[sync] Sync complete — ${count} fact rows upserted`);
+          process.exit(0);
+  })
+  .catch(err => {
+          console.error('[sync] Fatal error:', err);
+          process.exit(1);
+  });
