@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --geeko-teal: 168 56% 39%;
+    --geeko-navy: 213 49% 22%;
+    --geeko-orange: 14 76% 61%;
+    --geeko-lime: 82 79% 40%;
+    --geeko-sky: 199 70% 63%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+@layer components {
+  .card-metric {
+    @apply bg-card rounded-lg border border-border p-6 shadow-sm;
+  }
+
+  .stat-value {
+    @apply text-3xl font-bold text-geeko-navy;
+  }
+
+  .stat-label {
+    @apply text-sm text-muted-foreground uppercase tracking-wide;
+  }
+
+  .stat-change-positive {
+    @apply text-geeko-lime text-sm font-medium;
+  }
+
+  .stat-change-negative {
+    @apply text-geeko-orange text-sm font-medium;
+  }
+
+  .nav-link {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary;
+  }
+
+  .nav-link-active {
+    @apply bg-primary/10 text-primary font-medium;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-geeko-teal/40 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-geeko-teal/60;
+}
