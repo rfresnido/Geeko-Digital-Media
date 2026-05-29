@@ -1,0 +1,12 @@
+{
+  "name": "geeko-data-sync",
+  "version": "1.0.0",
+  "description": "NAS to Neon PostgreSQL sync scripts for Geeko Digital Media",
+  "type": "module",
+  "scripts": {
+    "sync": "node sync-nas-to-neon.js"
+  },
+  "dependencies": {
+    "pg": "^8.11.3"
+  }
+}
