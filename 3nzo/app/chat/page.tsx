@@ -137,13 +137,15 @@ What would you like to know?`,
               )}
             >
               {message.role === "assistant" ? (
-                <Image
-                  src="/geeko-avatar.png"
-                  alt="3nzo"
-                  width={28}
-                  height={28}
-                  className="rounded-lg shadow-sm shrink-0 object-cover aspect-square"
-                />
+                <div className="h-7 w-7 shrink-0 rounded-lg shadow-sm overflow-hidden">
+                  <Image
+                    src="/geeko-avatar.png"
+                    alt="3nzo"
+                    width={28}
+                    height={28}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
               ) : (
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg shadow-sm bg-gradient-to-br from-geeko-navy to-slate-700 text-white">
                   <User className="h-3.5 w-3.5" />
@@ -174,13 +176,15 @@ What would you like to know?`,
 
           {isLoading && (
             <div className="flex gap-3">
-              <Image
-                src="/geeko-avatar.png"
-                alt="3nzo"
-                width={28}
-                height={28}
-                className="rounded-lg shadow-sm shrink-0 object-cover aspect-square"
-              />
+              <div className="h-7 w-7 shrink-0 rounded-lg shadow-sm overflow-hidden">
+                <Image
+                  src="/geeko-avatar.png"
+                  alt="3nzo"
+                  width={28}
+                  height={28}
+                  className="h-full w-full object-cover"
+                />
+              </div>
               <div className="chat-bubble-assistant">
                 <div className="flex items-center gap-2">
                   <Loader2 className="h-3 w-3 animate-spin text-geeko-teal" />
