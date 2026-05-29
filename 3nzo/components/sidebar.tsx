@@ -30,8 +30,8 @@ export function Sidebar() {
         <Image
           src="/geeko-logo.png"
           alt="Geeko Digital Media"
-          width={140}
-          height={35}
+          width={120}
+          height={50}
           className="object-contain"
           priority
         />
