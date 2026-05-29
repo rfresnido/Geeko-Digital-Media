@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import {
   TrendingUp,
   TrendingDown,
@@ -330,9 +330,8 @@ function BrandTable({
           </thead>
           <tbody>
             {brands.map((row) => (
-              <>
+              <Fragment key={row.brand}>
                 <tr
-                  key={row.brand}
                   className="table-row cursor-pointer hover:bg-geeko-teal/5"
                   onClick={() => handleBrandClick(row.brand)}
                 >
@@ -499,7 +498,7 @@ function BrandTable({
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             ))}
           </tbody>
         </table>
