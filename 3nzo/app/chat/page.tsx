@@ -103,23 +103,23 @@ What would you like to know?`,
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-white to-teal-50/30">
       {/* Header */}
-      <div className="border-b border-slate-200/50 bg-white/70 backdrop-blur-xl px-5 py-3">
-        <div className="flex items-center gap-3">
+      <div className="border-b border-slate-200/50 bg-white/70 backdrop-blur-xl px-5 py-4">
+        <div className="flex items-center gap-4">
           <div className="relative">
             <Image
               src="/3nzo.png"
               alt="3nzo"
-              width={48}
-              height={48}
+              width={56}
+              height={56}
               className="rounded-xl shadow-md object-cover aspect-square"
             />
-            <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-white"></div>
+            <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-white"></div>
           </div>
           <div>
-            <h1 className="text-sm font-bold bg-gradient-to-r from-geeko-navy to-geeko-teal bg-clip-text text-transparent">
+            <h1 className="text-base font-bold bg-gradient-to-r from-geeko-navy to-geeko-teal bg-clip-text text-transparent">
               Chat with 3nzo
             </h1>
-            <p className="text-[10px] text-slate-500">
+            <p className="text-xs text-slate-500">
               Ask questions, get insights, execute changes
             </p>
           </div>
@@ -138,18 +138,18 @@ What would you like to know?`,
               )}
             >
               {message.role === "assistant" ? (
-                <div className="h-9 w-9 shrink-0 rounded-lg shadow-sm overflow-hidden">
+                <div className="h-11 w-11 shrink-0 rounded-xl shadow-sm overflow-hidden">
                   <Image
                     src="/3nzo.png"
                     alt="3nzo"
-                    width={36}
-                    height={36}
+                    width={44}
+                    height={44}
                     className="h-full w-full object-cover"
                   />
                 </div>
               ) : (
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg shadow-sm bg-gradient-to-br from-geeko-navy to-slate-700 text-white">
-                  <User className="h-4 w-4" />
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl shadow-sm bg-gradient-to-br from-geeko-navy to-slate-700 text-white">
+                  <User className="h-5 w-5" />
                 </div>
               )}
               <div
@@ -170,12 +170,12 @@ What would you like to know?`,
 
           {isLoading && (
             <div className="flex gap-3">
-              <div className="h-9 w-9 shrink-0 rounded-lg shadow-sm overflow-hidden">
+              <div className="h-11 w-11 shrink-0 rounded-xl shadow-sm overflow-hidden">
                 <Image
                   src="/3nzo.png"
                   alt="3nzo"
-                  width={36}
-                  height={36}
+                  width={44}
+                  height={44}
                   className="h-full w-full object-cover"
                 />
               </div>
