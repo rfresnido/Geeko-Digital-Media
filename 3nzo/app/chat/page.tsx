@@ -107,7 +107,7 @@ What would you like to know?`,
         <div className="flex items-center gap-3">
           <div className="relative">
             <Image
-              src="/geeko-avatar.png"
+              src="/3nzo.png"
               alt="3nzo"
               width={36}
               height={36}
@@ -140,7 +140,7 @@ What would you like to know?`,
               {message.role === "assistant" ? (
                 <div className="h-7 w-7 shrink-0 rounded-lg shadow-sm overflow-hidden">
                   <Image
-                    src="/geeko-avatar.png"
+                    src="/3nzo.png"
                     alt="3nzo"
                     width={28}
                     height={28}
@@ -172,7 +172,7 @@ What would you like to know?`,
             <div className="flex gap-3">
               <div className="h-7 w-7 shrink-0 rounded-lg shadow-sm overflow-hidden">
                 <Image
-                  src="/geeko-avatar.png"
+                  src="/3nzo.png"
                   alt="3nzo"
                   width={28}
                   height={28}
