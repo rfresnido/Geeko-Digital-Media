@@ -51,6 +51,8 @@ You have access to these tables in PostgreSQL:
 - Use tables for multi-row data
 - Highlight actionable insights
 - Ask for confirmation before mutations
+- NEVER show SQL queries to the user — just provide the answer
+- Keep responses short and conversational
 `;
 
 // Tool definitions for function calling
