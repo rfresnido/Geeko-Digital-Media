@@ -101,19 +101,19 @@ What would you like to know?`,
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-white to-teal-50/30">
       {/* Header */}
-      <div className="border-b border-slate-200/50 bg-white/70 backdrop-blur-xl px-8 py-5">
-        <div className="flex items-center gap-4">
+      <div className="border-b border-slate-200/50 bg-white/70 backdrop-blur-xl px-5 py-3">
+        <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl animated-gradient text-white shadow-lg shadow-teal-200">
-              <Bot className="h-6 w-6" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl animated-gradient text-white shadow-md shadow-teal-200">
+              <Bot className="h-4 w-4" />
             </div>
-            <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-white"></div>
+            <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 border border-white"></div>
           </div>
           <div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-geeko-navy to-geeko-teal bg-clip-text text-transparent">
+            <h1 className="text-sm font-bold bg-gradient-to-r from-geeko-navy to-geeko-teal bg-clip-text text-transparent">
               Chat with 3nzo
             </h1>
-            <p className="text-sm text-slate-500">
+            <p className="text-[10px] text-slate-500">
               Ask questions, get insights, execute changes
             </p>
           </div>
@@ -121,28 +121,28 @@ What would you like to know?`,
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-8 py-6">
-        <div className="max-w-3xl mx-auto space-y-6">
+      <div className="flex-1 overflow-y-auto px-5 py-4">
+        <div className="max-w-2xl mx-auto space-y-4">
           {messages.map((message) => (
             <div
               key={message.id}
               className={cn(
-                "flex gap-4",
+                "flex gap-3",
                 message.role === "user" && "flex-row-reverse"
               )}
             >
               <div
                 className={cn(
-                  "flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl shadow-md",
+                  "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg shadow-sm",
                   message.role === "assistant"
                     ? "bg-gradient-to-br from-geeko-teal to-teal-600 text-white"
                     : "bg-gradient-to-br from-geeko-navy to-slate-700 text-white"
                 )}
               >
                 {message.role === "assistant" ? (
-                  <Sparkles className="h-5 w-5" />
+                  <Sparkles className="h-3.5 w-3.5" />
                 ) : (
-                  <User className="h-5 w-5" />
+                  <User className="h-3.5 w-3.5" />
                 )}
               </div>
               <div
@@ -169,14 +169,14 @@ What would you like to know?`,
           ))}
 
           {isLoading && (
-            <div className="flex gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-geeko-teal to-teal-600 text-white shadow-md">
-                <Sparkles className="h-5 w-5" />
+            <div className="flex gap-3">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-geeko-teal to-teal-600 text-white shadow-sm">
+                <Sparkles className="h-3.5 w-3.5" />
               </div>
               <div className="chat-bubble-assistant">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-geeko-teal" />
-                  <span className="text-sm text-slate-500">Thinking...</span>
+                  <Loader2 className="h-3 w-3 animate-spin text-geeko-teal" />
+                  <span className="text-xs text-slate-500">Thinking...</span>
                 </div>
               </div>
             </div>
@@ -188,17 +188,17 @@ What would you like to know?`,
 
       {/* Quick Actions (show only if no messages yet) */}
       {messages.length === 1 && (
-        <div className="px-8 pb-4">
-          <div className="max-w-3xl mx-auto">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
+        <div className="px-5 pb-3">
+          <div className="max-w-2xl mx-auto">
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
               Quick Actions
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {quickActions.map((action) => (
                 <button
                   key={action}
                   onClick={() => setInput(action)}
-                  className="rounded-full bg-white border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:border-geeko-teal hover:text-geeko-teal transition-all duration-200"
+                  className="rounded-full bg-white border border-slate-200 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 hover:border-geeko-teal hover:text-geeko-teal transition-all duration-200"
                 >
                   {action}
                 </button>
@@ -209,9 +209,9 @@ What would you like to know?`,
       )}
 
       {/* Input */}
-      <div className="border-t border-slate-200/50 bg-white/70 backdrop-blur-xl p-6">
-        <div className="max-w-3xl mx-auto">
-          <form onSubmit={handleSubmit} className="flex gap-4">
+      <div className="border-t border-slate-200/50 bg-white/70 backdrop-blur-xl p-4">
+        <div className="max-w-2xl mx-auto">
+          <form onSubmit={handleSubmit} className="flex gap-3">
             <input
               type="text"
               value={input}
@@ -223,9 +223,9 @@ What would you like to know?`,
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="btn-primary px-5"
+              className="btn-primary px-4"
             >
-              <Send className="h-5 w-5" />
+              <Send className="h-4 w-4" />
             </button>
           </form>
         </div>

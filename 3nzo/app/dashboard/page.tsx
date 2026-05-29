@@ -77,9 +77,9 @@ function MetricCard({
             </div>
           )}
         </div>
-        <div className="mt-6">
+        <div className="mt-3">
           <p className="stat-value-light">{formattedValue}</p>
-          <p className="stat-label-light mt-1">{title}</p>
+          <p className="stat-label-light mt-0.5">{title}</p>
         </div>
       </div>
     );
@@ -100,9 +100,9 @@ function MetricCard({
           </div>
         )}
       </div>
-      <div className="mt-5">
+      <div className="mt-3">
         <p className="stat-value">{formattedValue}</p>
-        <p className="stat-label mt-1">{title}</p>
+        <p className="stat-label mt-0.5">{title}</p>
       </div>
     </div>
   );
@@ -119,26 +119,26 @@ function CompetitiveCard({
 }) {
   return (
     <div className="card-metric col-span-2">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
           <div className="icon-container">
-            <BarChart3 className="h-5 w-5" />
+            <BarChart3 className="h-4 w-4" />
           </div>
           <div>
-            <h3 className="font-semibold text-geeko-navy">Competitive Metrics</h3>
-            <p className="text-xs text-slate-400">Search impression share breakdown</p>
+            <h3 className="text-sm font-semibold text-geeko-navy">Competitive Metrics</h3>
+            <p className="text-[10px] text-slate-400">Search impression share</p>
           </div>
         </div>
         <span className="badge-success">
-          <Sparkles className="h-3 w-3" />
-          Good standing
+          <Sparkles className="h-2.5 w-2.5" />
+          Good
         </span>
       </div>
 
-      <div className="space-y-5">
+      <div className="space-y-3">
         <div>
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-slate-600 font-medium">Search Impression Share</span>
+          <div className="flex justify-between text-xs mb-1">
+            <span className="text-slate-600 font-medium">Search IS</span>
             <span className="font-bold text-geeko-teal">{searchIS}%</span>
           </div>
           <div className="progress-bar">
@@ -150,9 +150,9 @@ function CompetitiveCard({
         </div>
 
         <div>
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-slate-600 font-medium flex items-center gap-2">
-              <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+          <div className="flex justify-between text-xs mb-1">
+            <span className="text-slate-600 font-medium flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3 text-amber-500" />
               Lost IS (Budget)
             </span>
             <span className="font-bold text-amber-600">{lostBudget}%</span>
@@ -166,7 +166,7 @@ function CompetitiveCard({
         </div>
 
         <div>
-          <div className="flex justify-between text-sm mb-2">
+          <div className="flex justify-between text-xs mb-1">
             <span className="text-slate-600 font-medium">Lost IS (Rank)</span>
             <span className="font-bold text-slate-600">{lostRank}%</span>
           </div>
@@ -184,25 +184,25 @@ function CompetitiveCard({
 
 export default function DashboardPage() {
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="p-5 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex items-start justify-between mb-8">
+      <div className="flex items-start justify-between mb-5">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-geeko-navy to-geeko-teal bg-clip-text text-transparent">
+          <h1 className="text-xl font-bold bg-gradient-to-r from-geeko-navy to-geeko-teal bg-clip-text text-transparent">
             Dashboard
           </h1>
-          <p className="text-slate-500 mt-1">
+          <p className="text-slate-500 text-xs mt-0.5">
             Last 7 days • All brands
           </p>
         </div>
         <button className="btn-primary">
-          <ArrowUpRight className="h-4 w-4" />
-          Export Report
+          <ArrowUpRight className="h-3 w-3" />
+          Export
         </button>
       </div>
 
       {/* KPI Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         <MetricCard
           title="Total Spend"
           value={mockKPIs.totalSpend}
@@ -232,7 +232,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Second Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-5">
         <MetricCard
           title="Avg. CPC"
           value={mockKPIs.avgCPC}
@@ -254,12 +254,12 @@ export default function DashboardPage() {
 
       {/* Brand Performance Table */}
       <div className="card-metric">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-lg font-semibold text-geeko-navy">Performance by Brand</h3>
-            <p className="text-sm text-slate-400">Click on a row to see campaign details</p>
+            <h3 className="text-sm font-semibold text-geeko-navy">Performance by Brand</h3>
+            <p className="text-[10px] text-slate-400">Click row for details</p>
           </div>
-          <button className="btn-secondary text-sm py-2">
+          <button className="btn-secondary">
             View All
           </button>
         </div>
@@ -279,11 +279,11 @@ export default function DashboardPage() {
               {mockBrandData.map((row) => (
                 <tr key={row.brand} className="table-row cursor-pointer">
                   <td className="table-cell">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-geeko-teal/10 to-geeko-sky/10 flex items-center justify-center text-geeko-teal font-bold text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-geeko-teal/10 to-geeko-sky/10 flex items-center justify-center text-geeko-teal font-bold text-[10px]">
                         {row.brand.charAt(0)}
                       </div>
-                      <span className="font-semibold text-geeko-navy">{row.brand}</span>
+                      <span className="font-semibold text-geeko-navy text-xs">{row.brand}</span>
                     </div>
                   </td>
                   <td className="table-cell text-right font-semibold">{formatCurrency(row.spend)}</td>
@@ -297,12 +297,12 @@ export default function DashboardPage() {
                   <td className="table-cell text-right">
                     {row.trend === "up" ? (
                       <span className="stat-change-positive">
-                        <TrendingUp className="h-3 w-3" />
+                        <TrendingUp className="h-2.5 w-2.5" />
                         Up
                       </span>
                     ) : (
                       <span className="stat-change-negative">
-                        <TrendingDown className="h-3 w-3" />
+                        <TrendingDown className="h-2.5 w-2.5" />
                         Down
                       </span>
                     )}
