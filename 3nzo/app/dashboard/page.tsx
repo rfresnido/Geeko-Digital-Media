@@ -15,6 +15,8 @@ import {
   Loader2,
   ChevronDown,
   ChevronRight,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
 import { DateRangePicker } from "@/components/date-range-picker";
@@ -249,6 +251,8 @@ function formatCellValue(value: unknown, format?: string, columnId?: string): st
   }
 }
 
+type SortDirection = "asc" | "desc" | null;
+
 function BrandTable({
   brands,
   columns,
@@ -263,7 +267,42 @@ function BrandTable({
   const [expandedBrand, setExpandedBrand] = useState<string | null>(null);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loadingCampaigns, setLoadingCampaigns] = useState(false);
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const visibleColumns = columns.filter((c) => c.visible);
+
+  const handleSort = (columnId: string) => {
+    if (sortColumn === columnId) {
+      if (sortDirection === "desc") {
+        setSortDirection("asc");
+      } else {
+        setSortColumn(null);
+        setSortDirection(null);
+      }
+    } else {
+      setSortColumn(columnId);
+      setSortDirection("desc");
+    }
+  };
+
+  const sortedBrands = [...brands].sort((a, b) => {
+    if (!sortColumn || !sortDirection) return 0;
+
+    const aVal = a[sortColumn as keyof BrandPerformance];
+    const bVal = b[sortColumn as keyof BrandPerformance];
+
+    if (sortColumn === "brand" || sortColumn === "trend") {
+      const aStr = String(aVal).toLowerCase();
+      const bStr = String(bVal).toLowerCase();
+      return sortDirection === "desc"
+        ? bStr.localeCompare(aStr)
+        : aStr.localeCompare(bStr);
+    }
+
+    const aNum = Number(aVal) || 0;
+    const bNum = Number(bVal) || 0;
+    return sortDirection === "desc" ? bNum - aNum : aNum - bNum;
+  });
 
   const fetchCampaigns = useCallback(async (brandName: string) => {
     setLoadingCampaigns(true);
@@ -489,15 +528,28 @@ function BrandTable({
               {visibleColumns.map((col) => (
                 <th
                   key={col.id}
-                  className={`table-header ${col.id !== "brand" ? "text-right" : ""}`}
+                  className={`table-header cursor-pointer hover:bg-slate-50 select-none ${col.id !== "brand" ? "text-right" : ""}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSort(col.id);
+                  }}
                 >
-                  {col.label}
+                  <div className={`flex items-center gap-1 ${col.id !== "brand" ? "justify-end" : ""}`}>
+                    <span>{col.label}</span>
+                    {sortColumn === col.id && (
+                      sortDirection === "desc" ? (
+                        <ArrowDown className="h-3 w-3 text-geeko-teal" />
+                      ) : (
+                        <ArrowUp className="h-3 w-3 text-geeko-teal" />
+                      )
+                    )}
+                  </div>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {brands.map((row) => {
+            {sortedBrands.map((row) => {
               const brandRow = renderBrandRow(row);
               const campaignRows = renderCampaignRows(row.brand);
 
