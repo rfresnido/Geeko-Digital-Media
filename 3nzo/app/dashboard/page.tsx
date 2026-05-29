@@ -21,6 +21,7 @@ import {
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
 import { DateRangePicker } from "@/components/date-range-picker";
 import { ColumnCustomizer, defaultColumns, type ColumnConfig } from "@/components/column-customizer";
+import { FilterBar, defaultFilters, type FilterState } from "@/components/filter-bar";
 
 interface DashboardKPIs {
   totalSpend: number;
@@ -570,6 +571,7 @@ export default function DashboardPage() {
   const [kpis, setKpis] = useState<DashboardKPIs | null>(null);
   const [brands, setBrands] = useState<BrandPerformance[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [columns, setColumns] = useState<ColumnConfig[]>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("dashboard-columns");
@@ -614,6 +616,27 @@ export default function DashboardPage() {
     setDateRange({ startDate, endDate });
   };
 
+  const availableAccounts = brands.map((b) => b.brand);
+
+  const filteredBrands = brands.filter((brand) => {
+    if (filters.accounts.length > 0 && !filters.accounts.includes(brand.brand)) {
+      return false;
+    }
+    if (filters.status.length > 0) {
+      const hasActive = brand.activeCampaigns > 0;
+      const hasPaused = brand.pausedCampaigns > 0;
+      const wantsActive = filters.status.includes("Active");
+      const wantsPaused = filters.status.includes("Paused");
+      if (wantsActive && !wantsPaused && !hasActive) return false;
+      if (wantsPaused && !wantsActive && !hasPaused) return false;
+    }
+    if (filters.searchQuery) {
+      const query = filters.searchQuery.toLowerCase();
+      if (!brand.brand.toLowerCase().includes(query)) return false;
+    }
+    return true;
+  });
+
   if (isLoading || !kpis) {
     return (
       <div className="p-5 max-w-6xl mx-auto">
@@ -627,13 +650,15 @@ export default function DashboardPage() {
   return (
     <div className="p-5 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex items-start justify-between mb-5">
+      <div className="flex items-start justify-between mb-4">
         <div>
           <h1 className="text-xl font-bold bg-gradient-to-r from-geeko-navy to-geeko-teal bg-clip-text text-transparent">
             Dashboard
           </h1>
           <p className="text-slate-500 text-xs mt-0.5">
-            All brands
+            {filters.accounts.length > 0
+              ? `${filters.accounts.length} account${filters.accounts.length > 1 ? "s" : ""} selected`
+              : "All accounts"}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -647,6 +672,15 @@ export default function DashboardPage() {
             Export
           </button>
         </div>
+      </div>
+
+      {/* Filter Bar */}
+      <div className="mb-5">
+        <FilterBar
+          availableAccounts={availableAccounts}
+          filters={filters}
+          onChange={setFilters}
+        />
       </div>
 
       {/* KPI Grid */}
@@ -701,7 +735,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Brand Performance Table */}
-      <BrandTable brands={brands} columns={columns} onColumnsChange={setColumns} dateRange={dateRange} />
+      <BrandTable brands={filteredBrands} columns={columns} onColumnsChange={setColumns} dateRange={dateRange} />
     </div>
   );
 }
