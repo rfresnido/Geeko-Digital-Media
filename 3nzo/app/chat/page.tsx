@@ -16,7 +16,7 @@ export default function ChatPage() {
     {
       id: "welcome",
       role: "assistant",
-      content: `Hey! I'm **3Nzo**, your paid media AI assistant.
+      content: `Hey! I'm **3nzo**, your paid media AI assistant.
 
 I can help you with:
 - 📊 **Query metrics** — "How much did Radiant Waxing spend last week?"
@@ -96,7 +96,7 @@ What would you like to know?`,
     <div className="flex flex-col h-screen">
       {/* Header */}
       <div className="border-b border-border bg-card px-6 py-4">
-        <h1 className="text-xl font-bold text-geeko-navy">Chat with 3Nzo</h1>
+        <h1 className="text-xl font-bold text-geeko-navy">Chat with 3nzo</h1>
         <p className="text-sm text-muted-foreground">
           Ask questions, get insights, execute changes
         </p>
@@ -170,7 +170,7 @@ What would you like to know?`,
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask 3Nzo anything..."
+            placeholder="Ask 3nzo anything..."
             className="flex-1 rounded-lg border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-geeko-teal focus:border-transparent"
             disabled={isLoading}
           />

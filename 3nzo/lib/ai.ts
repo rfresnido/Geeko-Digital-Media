@@ -9,7 +9,7 @@ export const aiModel = openai("gpt-4o");
 // export const aiModel = anthropic("claude-sonnet-4-20250514");
 
 // System prompt with schema knowledge
-export const systemPrompt = `You are 3Nzo, an AI assistant for Geeko Digital Media's paid media operations.
+export const systemPrompt = `You are 3nzo, an AI assistant for Geeko Digital Media's paid media operations.
 
 ## Your Capabilities
 1. Query performance data (impressions, clicks, spend, conversions)

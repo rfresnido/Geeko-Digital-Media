@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/chat", label: "Chat with 3Nzo", icon: MessageSquare },
+  { href: "/chat", label: "Chat with 3nzo", icon: MessageSquare },
   { href: "/campaigns", label: "Campaigns", icon: Target },
   { href: "/history", label: "Mutation Log", icon: History },
 ];
@@ -29,7 +29,7 @@ export function Sidebar() {
           3N
         </div>
         <div>
-          <h1 className="font-bold text-geeko-navy">3Nzo</h1>
+          <h1 className="font-bold text-geeko-navy">3nzo</h1>
           <p className="text-xs text-muted-foreground">Geeko Digital Media</p>
         </div>
       </div>

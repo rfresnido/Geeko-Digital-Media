@@ -1,4 +1,4 @@
--- 3Nzo Star Schema for Neon PostgreSQL
+-- 3nzo Star Schema for Neon PostgreSQL
 -- Geeko Digital Media - Paid Media Data Warehouse
 --
 -- Architecture:
@@ -142,7 +142,7 @@ CREATE INDEX IF NOT EXISTS idx_fact_date_brand ON fact_performance(data_date, br
 CREATE INDEX IF NOT EXISTS idx_fact_customer_date ON fact_performance(customer_id, data_date);
 
 -- ============================================
--- AUDIT: 3Nzo Mutations Log
+-- AUDIT: 3nzo Mutations Log
 -- ============================================
 CREATE TABLE IF NOT EXISTS enzo_mutations (
     mutation_id SERIAL PRIMARY KEY,
@@ -327,4 +327,4 @@ COMMENT ON TABLE dim_brands IS 'Brand/Account dimension - master list of Google 
 COMMENT ON TABLE dim_campaigns IS 'Campaign dimension with mutable state (status, budget)';
 COMMENT ON TABLE dim_ad_groups IS 'Ad Group dimension with mutable state (status, bids)';
 COMMENT ON TABLE fact_performance IS 'Daily performance metrics including competitive metrics';
-COMMENT ON TABLE enzo_mutations IS 'Audit log of all 3Nzo actions and state changes';
+COMMENT ON TABLE enzo_mutations IS 'Audit log of all 3nzo actions and state changes';

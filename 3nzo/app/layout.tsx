@@ -6,7 +6,7 @@ import { Sidebar } from "@/components/sidebar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "3Nzo | Geeko Digital Media",
+  title: "3nzo | Geeko Digital Media",
   description: "AI-powered paid media command center",
 };
 

@@ -1,6 +1,6 @@
-# 3Nzo — Paid Media AI Command Center
+# 3nzo — Paid Media AI Command Center
 
-3Nzo is a Next.js application that provides a dashboard and AI chat interface for managing paid media campaigns across Google Ads and Meta Ads.
+3nzo is a Next.js application that provides a dashboard and AI chat interface for managing paid media campaigns across Google Ads and Meta Ads.
 
 ## Architecture
 
@@ -37,7 +37,7 @@
 - **AI Chat** — Natural language interface for queries and mutations
 - **Campaign Management** — Pause/enable campaigns, adjust budgets
 - **Ad Group Control** — Bid adjustments with historical context
-- **Mutation Logging** — Audit trail of all 3Nzo actions
+- **Mutation Logging** — Audit trail of all 3nzo actions
 - **Competitive Metrics** — Search IS, Lost IS (Budget/Rank)
 
 ## Tech Stack
