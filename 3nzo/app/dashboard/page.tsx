@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import {
   TrendingUp,
   TrendingDown,
@@ -11,30 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
-
-// Mock data - will be replaced with real Neon queries
-const mockKPIs = {
-  totalSpend: 12450.67,
-  spendChange: 8.3,
-  impressions: 1234567,
-  impressionsChange: 12.4,
-  clicks: 45678,
-  clicksChange: -2.1,
-  conversions: 892,
-  conversionsChange: 15.7,
-  avgCPC: 0.27,
-  avgCTR: 3.7,
-  searchIS: 72.4,
-  lostISBudget: 8.2,
-  lostISRank: 19.4,
-};
-
-const mockBrandData = [
-  { brand: "Amazing Lash Studio", spend: 4521.34, clicks: 16234, convs: 312, searchIS: 78.2, trend: "up" },
-  { brand: "Paused Studio", spend: 3890.12, clicks: 14567, convs: 289, searchIS: 71.5, trend: "up" },
-  { brand: "Radiant Waxing", spend: 2345.67, clicks: 8765, convs: 178, searchIS: 68.3, trend: "down" },
-  { brand: "Drybar", spend: 1693.54, clicks: 6112, convs: 113, searchIS: 82.1, trend: "up" },
-];
+import { getDashboardKPIs, getBrandPerformance, type BrandPerformance } from "@/lib/dashboard-data";
 
 function MetricCard({
   title,
@@ -117,6 +96,9 @@ function CompetitiveCard({
   lostBudget: number;
   lostRank: number;
 }) {
+  const status = searchIS >= 70 ? "Good" : searchIS >= 50 ? "Fair" : "Low";
+  const statusClass = searchIS >= 70 ? "badge-success" : searchIS >= 50 ? "badge-warning" : "badge-neutral";
+
   return (
     <div className="card-metric col-span-2">
       <div className="flex items-center justify-between mb-4">
@@ -129,9 +111,9 @@ function CompetitiveCard({
             <p className="text-[10px] text-slate-400">Search impression share</p>
           </div>
         </div>
-        <span className="badge-success">
+        <span className={statusClass}>
           <Sparkles className="h-2.5 w-2.5" />
-          Good
+          {status}
         </span>
       </div>
 
@@ -139,12 +121,12 @@ function CompetitiveCard({
         <div>
           <div className="flex justify-between text-xs mb-1">
             <span className="text-slate-600 font-medium">Search IS</span>
-            <span className="font-bold text-geeko-teal">{searchIS}%</span>
+            <span className="font-bold text-geeko-teal">{searchIS.toFixed(1)}%</span>
           </div>
           <div className="progress-bar">
             <div
               className="progress-fill bg-gradient-to-r from-geeko-teal to-teal-400"
-              style={{ width: `${searchIS}%` }}
+              style={{ width: `${Math.min(searchIS, 100)}%` }}
             />
           </div>
         </div>
@@ -155,12 +137,12 @@ function CompetitiveCard({
               <AlertTriangle className="h-3 w-3 text-amber-500" />
               Lost IS (Budget)
             </span>
-            <span className="font-bold text-amber-600">{lostBudget}%</span>
+            <span className="font-bold text-amber-600">{lostBudget.toFixed(1)}%</span>
           </div>
           <div className="progress-bar">
             <div
               className="progress-fill bg-gradient-to-r from-amber-400 to-amber-500"
-              style={{ width: `${lostBudget}%` }}
+              style={{ width: `${Math.min(lostBudget, 100)}%` }}
             />
           </div>
         </div>
@@ -168,12 +150,12 @@ function CompetitiveCard({
         <div>
           <div className="flex justify-between text-xs mb-1">
             <span className="text-slate-600 font-medium">Lost IS (Rank)</span>
-            <span className="font-bold text-slate-600">{lostRank}%</span>
+            <span className="font-bold text-slate-600">{lostRank.toFixed(1)}%</span>
           </div>
           <div className="progress-bar">
             <div
               className="progress-fill bg-gradient-to-r from-slate-400 to-slate-500"
-              style={{ width: `${lostRank}%` }}
+              style={{ width: `${Math.min(lostRank, 100)}%` }}
             />
           </div>
         </div>
@@ -182,7 +164,79 @@ function CompetitiveCard({
   );
 }
 
-export default function DashboardPage() {
+function BrandTable({ brands }: { brands: BrandPerformance[] }) {
+  return (
+    <div className="card-metric">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="text-sm font-semibold text-geeko-navy">Performance by Brand</h3>
+          <p className="text-[10px] text-slate-400">Click row for details</p>
+        </div>
+        <button className="btn-secondary">
+          View All
+        </button>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-slate-100">
+              <th className="table-header">Brand</th>
+              <th className="table-header text-right">Spend</th>
+              <th className="table-header text-right">Clicks</th>
+              <th className="table-header text-right">Conversions</th>
+              <th className="table-header text-right">Search IS</th>
+              <th className="table-header text-right">Trend</th>
+            </tr>
+          </thead>
+          <tbody>
+            {brands.map((row) => (
+              <tr key={row.brand} className="table-row cursor-pointer">
+                <td className="table-cell">
+                  <div className="flex items-center gap-2">
+                    <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-geeko-teal/10 to-geeko-sky/10 flex items-center justify-center text-geeko-teal font-bold text-[10px]">
+                      {row.brand.charAt(0)}
+                    </div>
+                    <span className="font-semibold text-geeko-navy text-xs">{row.brand}</span>
+                  </div>
+                </td>
+                <td className="table-cell text-right font-semibold">{formatCurrency(row.spend)}</td>
+                <td className="table-cell text-right text-slate-600">{formatNumber(row.clicks)}</td>
+                <td className="table-cell text-right text-slate-600">{formatNumber(row.convs)}</td>
+                <td className="table-cell text-right">
+                  <span className={`font-semibold ${row.searchIS >= 75 ? "text-emerald-600" : row.searchIS >= 60 ? "text-amber-600" : "text-rose-600"}`}>
+                    {row.searchIS.toFixed(1)}%
+                  </span>
+                </td>
+                <td className="table-cell text-right">
+                  {row.trend === "up" ? (
+                    <span className="stat-change-positive">
+                      <TrendingUp className="h-2.5 w-2.5" />
+                      Up
+                    </span>
+                  ) : row.trend === "down" ? (
+                    <span className="stat-change-negative">
+                      <TrendingDown className="h-2.5 w-2.5" />
+                      Down
+                    </span>
+                  ) : (
+                    <span className="text-slate-400 text-xs">Flat</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+export default async function DashboardPage() {
+  const [kpis, brands] = await Promise.all([
+    getDashboardKPIs(7),
+    getBrandPerformance(7),
+  ]);
+
   return (
     <div className="p-5 max-w-6xl mx-auto">
       {/* Header */}
@@ -205,28 +259,28 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         <MetricCard
           title="Total Spend"
-          value={mockKPIs.totalSpend}
-          change={mockKPIs.spendChange}
+          value={kpis.totalSpend}
+          change={kpis.spendChange}
           icon={DollarSign}
           format="currency"
           featured
         />
         <MetricCard
           title="Impressions"
-          value={mockKPIs.impressions}
-          change={mockKPIs.impressionsChange}
+          value={kpis.impressions}
+          change={kpis.impressionsChange}
           icon={Eye}
         />
         <MetricCard
           title="Clicks"
-          value={mockKPIs.clicks}
-          change={mockKPIs.clicksChange}
+          value={kpis.clicks}
+          change={kpis.clicksChange}
           icon={MousePointerClick}
         />
         <MetricCard
           title="Conversions"
-          value={mockKPIs.conversions}
-          change={mockKPIs.conversionsChange}
+          value={kpis.conversions}
+          change={kpis.conversionsChange}
           icon={Target}
         />
       </div>
@@ -235,84 +289,25 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-5">
         <MetricCard
           title="Avg. CPC"
-          value={mockKPIs.avgCPC}
+          value={kpis.avgCPC}
           icon={DollarSign}
           format="currency"
         />
         <MetricCard
           title="Avg. CTR"
-          value={mockKPIs.avgCTR}
+          value={kpis.avgCTR}
           icon={MousePointerClick}
           format="percent"
         />
         <CompetitiveCard
-          searchIS={mockKPIs.searchIS}
-          lostBudget={mockKPIs.lostISBudget}
-          lostRank={mockKPIs.lostISRank}
+          searchIS={kpis.searchIS}
+          lostBudget={kpis.lostISBudget}
+          lostRank={kpis.lostISRank}
         />
       </div>
 
       {/* Brand Performance Table */}
-      <div className="card-metric">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-sm font-semibold text-geeko-navy">Performance by Brand</h3>
-            <p className="text-[10px] text-slate-400">Click row for details</p>
-          </div>
-          <button className="btn-secondary">
-            View All
-          </button>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-100">
-                <th className="table-header">Brand</th>
-                <th className="table-header text-right">Spend</th>
-                <th className="table-header text-right">Clicks</th>
-                <th className="table-header text-right">Conversions</th>
-                <th className="table-header text-right">Search IS</th>
-                <th className="table-header text-right">Trend</th>
-              </tr>
-            </thead>
-            <tbody>
-              {mockBrandData.map((row) => (
-                <tr key={row.brand} className="table-row cursor-pointer">
-                  <td className="table-cell">
-                    <div className="flex items-center gap-2">
-                      <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-geeko-teal/10 to-geeko-sky/10 flex items-center justify-center text-geeko-teal font-bold text-[10px]">
-                        {row.brand.charAt(0)}
-                      </div>
-                      <span className="font-semibold text-geeko-navy text-xs">{row.brand}</span>
-                    </div>
-                  </td>
-                  <td className="table-cell text-right font-semibold">{formatCurrency(row.spend)}</td>
-                  <td className="table-cell text-right text-slate-600">{formatNumber(row.clicks)}</td>
-                  <td className="table-cell text-right text-slate-600">{formatNumber(row.convs)}</td>
-                  <td className="table-cell text-right">
-                    <span className={`font-semibold ${row.searchIS >= 75 ? "text-emerald-600" : row.searchIS >= 60 ? "text-amber-600" : "text-rose-600"}`}>
-                      {row.searchIS}%
-                    </span>
-                  </td>
-                  <td className="table-cell text-right">
-                    {row.trend === "up" ? (
-                      <span className="stat-change-positive">
-                        <TrendingUp className="h-2.5 w-2.5" />
-                        Up
-                      </span>
-                    ) : (
-                      <span className="stat-change-negative">
-                        <TrendingDown className="h-2.5 w-2.5" />
-                        Down
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <BrandTable brands={brands} />
     </div>
   );
 }
