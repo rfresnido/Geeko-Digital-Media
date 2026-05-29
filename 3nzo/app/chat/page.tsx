@@ -109,11 +109,11 @@ What would you like to know?`,
             <Image
               src="/3nzo.png"
               alt="3nzo"
-              width={36}
-              height={36}
+              width={48}
+              height={48}
               className="rounded-xl shadow-md object-cover aspect-square"
             />
-            <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 border border-white"></div>
+            <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-white"></div>
           </div>
           <div>
             <h1 className="text-sm font-bold bg-gradient-to-r from-geeko-navy to-geeko-teal bg-clip-text text-transparent">
@@ -138,18 +138,18 @@ What would you like to know?`,
               )}
             >
               {message.role === "assistant" ? (
-                <div className="h-7 w-7 shrink-0 rounded-lg shadow-sm overflow-hidden">
+                <div className="h-9 w-9 shrink-0 rounded-lg shadow-sm overflow-hidden">
                   <Image
                     src="/3nzo.png"
                     alt="3nzo"
-                    width={28}
-                    height={28}
+                    width={36}
+                    height={36}
                     className="h-full w-full object-cover"
                   />
                 </div>
               ) : (
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg shadow-sm bg-gradient-to-br from-geeko-navy to-slate-700 text-white">
-                  <User className="h-3.5 w-3.5" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg shadow-sm bg-gradient-to-br from-geeko-navy to-slate-700 text-white">
+                  <User className="h-4 w-4" />
                 </div>
               )}
               <div
@@ -170,12 +170,12 @@ What would you like to know?`,
 
           {isLoading && (
             <div className="flex gap-3">
-              <div className="h-7 w-7 shrink-0 rounded-lg shadow-sm overflow-hidden">
+              <div className="h-9 w-9 shrink-0 rounded-lg shadow-sm overflow-hidden">
                 <Image
                   src="/3nzo.png"
                   alt="3nzo"
-                  width={28}
-                  height={28}
+                  width={36}
+                  height={36}
                   className="h-full w-full object-cover"
                 />
               </div>
