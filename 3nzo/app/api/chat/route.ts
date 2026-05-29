@@ -107,8 +107,29 @@ export async function POST(request: NextRequest) {
     let contextData = "";
     const brandFilter = extractBrandFromMessage(userMessage);
 
+    // If a brand is mentioned, always fetch its data
+    if (brandFilter) {
+      try {
+        const spendData = await getBrandSpend(brandFilter);
+
+        if (spendData.length > 0) {
+          contextData = `\n\n**${spendData[0].brand_name} Performance (Last 7 Days):**\n`;
+          contextData += `| Metric | Value |\n`;
+          contextData += `|--------|-------|\n`;
+          contextData += `| Spend | $${spendData[0].spend} |\n`;
+          contextData += `| Impressions | ${Number(spendData[0].impressions).toLocaleString()} |\n`;
+          contextData += `| Clicks | ${spendData[0].clicks} |\n`;
+          contextData += `| Conversions | ${spendData[0].conversions} |\n`;
+          contextData += `| CTR | ${spendData[0].ctr}% |\n`;
+          contextData += `| CPC | $${spendData[0].cpc} |\n`;
+          contextData += `| Search IS | ${spendData[0].search_is}% |\n`;
+        }
+      } catch (dbError) {
+        console.error("Database query error:", dbError);
+      }
+    }
     // Top performing / best campaigns
-    if (
+    else if (
       lowerMessage.includes("top") ||
       lowerMessage.includes("best") ||
       lowerMessage.includes("performing") ||
@@ -132,14 +153,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Spend queries
+    // Spend queries (all brands)
     else if (
       lowerMessage.includes("spend") ||
       lowerMessage.includes("cost") ||
       lowerMessage.includes("how much")
     ) {
       try {
-        const spendData = await getBrandSpend(brandFilter);
+        const spendData = await getBrandSpend();
 
         if (spendData.length > 0) {
           contextData = `\n\n**Spend Summary (Last 7 Days):**\n`;
