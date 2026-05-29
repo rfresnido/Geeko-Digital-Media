@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Send, User, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MessageContent } from "@/components/message-content";
 
 interface Message {
   id: string;
@@ -153,22 +154,15 @@ What would you like to know?`,
               )}
               <div
                 className={cn(
-                  "max-w-[75%]",
+                  "max-w-[85%]",
                   message.role === "assistant"
                     ? "chat-bubble-assistant"
                     : "chat-bubble-user"
                 )}
               >
-                <div
-                  className={cn(
-                    "prose prose-sm max-w-none",
-                    message.role === "user" && "prose-invert"
-                  )}
-                  dangerouslySetInnerHTML={{
-                    __html: message.content
-                      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                      .replace(/\n/g, "<br />"),
-                  }}
+                <MessageContent
+                  content={message.content}
+                  isUser={message.role === "user"}
                 />
               </div>
             </div>
