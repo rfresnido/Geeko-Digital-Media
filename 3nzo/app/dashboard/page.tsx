@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { formatCurrency, formatNumber, formatPercent } from "@/lib/utils";
 import { DateRangePicker } from "@/components/date-range-picker";
+import { ColumnCustomizer, defaultColumns, type ColumnConfig } from "@/components/column-customizer";
 
 interface DashboardKPIs {
   totalSpend: number;
@@ -35,10 +36,20 @@ interface DashboardKPIs {
 
 interface BrandPerformance {
   brand: string;
-  spend: number;
+  impressions: number;
   clicks: number;
-  convs: number;
+  spend: number;
+  conversions: number;
+  ctr: number;
+  cpc: number;
+  cpa: number;
+  cvr: number;
   searchIS: number;
+  lostISBudget: number;
+  lostISRank: number;
+  activeCampaigns: number;
+  pausedCampaigns: number;
+  totalDailyBudget: number;
   trend: "up" | "down" | "flat";
 }
 
@@ -201,7 +212,36 @@ function CompetitiveCard({
   );
 }
 
-function BrandTable({ brands }: { brands: BrandPerformance[] }) {
+function formatCellValue(value: unknown, format?: string, columnId?: string): string {
+  if (value === null || value === undefined) return "N/A";
+
+  if (columnId === "brand") return String(value);
+
+  const numValue = Number(value);
+  if (isNaN(numValue)) return String(value);
+
+  switch (format) {
+    case "currency":
+      return formatCurrency(numValue);
+    case "percent":
+      return `${numValue.toFixed(1)}%`;
+    case "number":
+    default:
+      return formatNumber(numValue);
+  }
+}
+
+function BrandTable({
+  brands,
+  columns,
+  onColumnsChange,
+}: {
+  brands: BrandPerformance[];
+  columns: ColumnConfig[];
+  onColumnsChange: (columns: ColumnConfig[]) => void;
+}) {
+  const visibleColumns = columns.filter((c) => c.visible);
+
   if (brands.length === 0) {
     return (
       <div className="card-metric">
@@ -219,56 +259,93 @@ function BrandTable({ brands }: { brands: BrandPerformance[] }) {
           <h3 className="text-sm font-semibold text-geeko-navy">Performance by Brand</h3>
           <p className="text-[10px] text-slate-400">Click row for details</p>
         </div>
-        <button className="btn-secondary">
-          View All
-        </button>
+        <div className="flex items-center gap-2">
+          <ColumnCustomizer columns={columns} onChange={onColumnsChange} />
+        </div>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-100">
-              <th className="table-header">Brand</th>
-              <th className="table-header text-right">Spend</th>
-              <th className="table-header text-right">Clicks</th>
-              <th className="table-header text-right">Conversions</th>
-              <th className="table-header text-right">Search IS</th>
-              <th className="table-header text-right">Trend</th>
+              {visibleColumns.map((col) => (
+                <th
+                  key={col.id}
+                  className={`table-header ${col.id !== "brand" ? "text-right" : ""}`}
+                >
+                  {col.label}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {brands.map((row) => (
               <tr key={row.brand} className="table-row cursor-pointer">
-                <td className="table-cell">
-                  <div className="flex items-center gap-2">
-                    <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-geeko-teal/10 to-geeko-sky/10 flex items-center justify-center text-geeko-teal font-bold text-[10px]">
-                      {row.brand.charAt(0)}
-                    </div>
-                    <span className="font-semibold text-geeko-navy text-xs">{row.brand}</span>
-                  </div>
-                </td>
-                <td className="table-cell text-right font-semibold">{formatCurrency(row.spend)}</td>
-                <td className="table-cell text-right text-slate-600">{formatNumber(row.clicks)}</td>
-                <td className="table-cell text-right text-slate-600">{formatNumber(row.convs)}</td>
-                <td className="table-cell text-right">
-                  <span className={`font-semibold ${row.searchIS >= 75 ? "text-emerald-600" : row.searchIS >= 60 ? "text-amber-600" : "text-rose-600"}`}>
-                    {row.searchIS.toFixed(1)}%
-                  </span>
-                </td>
-                <td className="table-cell text-right">
-                  {row.trend === "up" ? (
-                    <span className="stat-change-positive">
-                      <TrendingUp className="h-2.5 w-2.5" />
-                      Up
-                    </span>
-                  ) : row.trend === "down" ? (
-                    <span className="stat-change-negative">
-                      <TrendingDown className="h-2.5 w-2.5" />
-                      Down
-                    </span>
-                  ) : (
-                    <span className="text-slate-400 text-xs">Flat</span>
-                  )}
-                </td>
+                {visibleColumns.map((col) => {
+                  const value = row[col.id as keyof BrandPerformance];
+
+                  if (col.id === "brand") {
+                    return (
+                      <td key={col.id} className="table-cell">
+                        <div className="flex items-center gap-2">
+                          <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-geeko-teal/10 to-geeko-sky/10 flex items-center justify-center text-geeko-teal font-bold text-[10px]">
+                            {row.brand.charAt(0)}
+                          </div>
+                          <span className="font-semibold text-geeko-navy text-xs">{row.brand}</span>
+                        </div>
+                      </td>
+                    );
+                  }
+
+                  if (col.id === "trend") {
+                    return (
+                      <td key={col.id} className="table-cell text-right">
+                        {row.trend === "up" ? (
+                          <span className="stat-change-positive">
+                            <TrendingUp className="h-2.5 w-2.5" />
+                            Up
+                          </span>
+                        ) : row.trend === "down" ? (
+                          <span className="stat-change-negative">
+                            <TrendingDown className="h-2.5 w-2.5" />
+                            Down
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 text-xs">Flat</span>
+                        )}
+                      </td>
+                    );
+                  }
+
+                  if (col.id === "searchIS") {
+                    return (
+                      <td key={col.id} className="table-cell text-right">
+                        <span className={`font-semibold ${row.searchIS >= 75 ? "text-emerald-600" : row.searchIS >= 60 ? "text-amber-600" : "text-rose-600"}`}>
+                          {row.searchIS.toFixed(1)}%
+                        </span>
+                      </td>
+                    );
+                  }
+
+                  if (col.id === "activeCampaigns" || col.id === "pausedCampaigns") {
+                    const isActive = col.id === "activeCampaigns";
+                    return (
+                      <td key={col.id} className="table-cell text-right">
+                        <span className={`text-xs font-medium ${isActive ? "text-emerald-600" : "text-slate-400"}`}>
+                          {formatCellValue(value, col.format, col.id)}
+                        </span>
+                      </td>
+                    );
+                  }
+
+                  return (
+                    <td
+                      key={col.id}
+                      className={`table-cell text-right ${col.id === "spend" ? "font-semibold" : "text-slate-600"}`}
+                    >
+                      {formatCellValue(value, col.format, col.id)}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
@@ -283,6 +360,25 @@ export default function DashboardPage() {
   const [kpis, setKpis] = useState<DashboardKPIs | null>(null);
   const [brands, setBrands] = useState<BrandPerformance[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [columns, setColumns] = useState<ColumnConfig[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("dashboard-columns");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return defaultColumns;
+        }
+      }
+    }
+    return defaultColumns;
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("dashboard-columns", JSON.stringify(columns));
+    }
+  }, [columns]);
 
   useEffect(() => {
     async function fetchData() {
@@ -395,7 +491,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Brand Performance Table */}
-      <BrandTable brands={brands} />
+      <BrandTable brands={brands} columns={columns} onColumnsChange={setColumns} />
     </div>
   );
 }
