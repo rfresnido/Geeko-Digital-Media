@@ -60,14 +60,6 @@ export function Sidebar() {
           <Settings className="h-5 w-5" />
           Settings
         </Link>
-        <div className="mt-4 rounded-lg bg-muted p-3">
-          <p className="text-xs text-muted-foreground">
-            AI Engine: <span className="text-geeko-teal font-medium">GPT-4o</span>
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Credits: <span className="text-geeko-orange font-medium">$9.00</span>
-          </p>
-        </div>
       </div>
     </aside>
   );
