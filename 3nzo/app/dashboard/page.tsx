@@ -254,16 +254,16 @@ function formatCellValue(value: unknown, format?: string, columnId?: string): st
 
 type SortDirection = "asc" | "desc" | null;
 
-function BrandTable({
+function BrandTableContent({
   brands,
   columns,
-  onColumnsChange,
   dateRange,
+  campaignFilter,
 }: {
   brands: BrandPerformance[];
   columns: ColumnConfig[];
-  onColumnsChange: (columns: ColumnConfig[]) => void;
   dateRange: { startDate: string; endDate: string };
+  campaignFilter: string;
 }) {
   const [expandedBrand, setExpandedBrand] = useState<string | null>(null);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -332,12 +332,17 @@ function BrandTable({
     }
   };
 
+  // Filter campaigns based on campaign name filter
+  const filteredCampaigns = campaignFilter
+    ? campaigns.filter((c) =>
+        c.campaign_name.toLowerCase().includes(campaignFilter.toLowerCase())
+      )
+    : campaigns;
+
   if (brands.length === 0) {
     return (
-      <div className="card-metric">
-        <div className="text-center py-8 text-slate-500">
-          <p className="text-sm">No data for selected date range</p>
-        </div>
+      <div className="text-center py-8 text-slate-500">
+        <p className="text-sm">No data for selected date range</p>
       </div>
     );
   }
@@ -442,19 +447,19 @@ function BrandTable({
       );
     }
 
-    if (campaigns.length === 0) {
+    if (filteredCampaigns.length === 0) {
       return (
         <tr key={`${brandName}-empty`}>
           <td colSpan={visibleColumns.length} className="table-cell bg-slate-50/50">
             <div className="text-center py-4 text-xs text-slate-400">
-              No campaigns found
+              {campaignFilter ? `No campaigns matching "${campaignFilter}"` : "No campaigns found"}
             </div>
           </td>
         </tr>
       );
     }
 
-    return campaigns.map((campaign) => (
+    return filteredCampaigns.map((campaign) => (
       <tr key={`campaign-${campaign.campaign_id}`} className="bg-slate-50/50 hover:bg-slate-100/50">
         {visibleColumns.map((col) => {
           if (col.id === "brand") {
@@ -512,56 +517,45 @@ function BrandTable({
   };
 
   return (
-    <div className="card-metric">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-sm font-semibold text-geeko-navy">Performance by Brand</h3>
-          <p className="text-[10px] text-slate-400">Click row to expand campaigns</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <ColumnCustomizer columns={columns} onChange={onColumnsChange} />
-        </div>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-slate-100">
-              {visibleColumns.map((col) => (
-                <th
-                  key={col.id}
-                  className={`table-header cursor-pointer hover:bg-slate-50 select-none ${col.id !== "brand" ? "text-right" : ""}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSort(col.id);
-                  }}
-                >
-                  <div className={`flex items-center gap-1 ${col.id !== "brand" ? "justify-end" : ""}`}>
-                    <span>{col.label}</span>
-                    {sortColumn === col.id && (
-                      sortDirection === "desc" ? (
-                        <ArrowDown className="h-3 w-3 text-geeko-teal" />
-                      ) : (
-                        <ArrowUp className="h-3 w-3 text-geeko-teal" />
-                      )
-                    )}
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {sortedBrands.map((row) => {
-              const brandRow = renderBrandRow(row);
-              const campaignRows = renderCampaignRows(row.brand);
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-slate-100">
+            {visibleColumns.map((col) => (
+              <th
+                key={col.id}
+                className={`table-header cursor-pointer hover:bg-slate-50 select-none ${col.id !== "brand" ? "text-right" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSort(col.id);
+                }}
+              >
+                <div className={`flex items-center gap-1 ${col.id !== "brand" ? "justify-end" : ""}`}>
+                  <span>{col.label}</span>
+                  {sortColumn === col.id && (
+                    sortDirection === "desc" ? (
+                      <ArrowDown className="h-3 w-3 text-geeko-teal" />
+                    ) : (
+                      <ArrowUp className="h-3 w-3 text-geeko-teal" />
+                    )
+                  )}
+                </div>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {sortedBrands.map((row) => {
+            const brandRow = renderBrandRow(row);
+            const campaignRows = renderCampaignRows(row.brand);
 
-              if (campaignRows) {
-                return [brandRow, campaignRows];
-              }
-              return brandRow;
-            })}
-          </tbody>
-        </table>
-      </div>
+            if (campaignRows) {
+              return [brandRow, campaignRows];
+            }
+            return brandRow;
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -650,7 +644,7 @@ export default function DashboardPage() {
   return (
     <div className="p-5 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start justify-between mb-5">
         <div>
           <h1 className="text-xl font-bold bg-gradient-to-r from-geeko-navy to-geeko-teal bg-clip-text text-transparent">
             Dashboard
@@ -672,15 +666,6 @@ export default function DashboardPage() {
             Export
           </button>
         </div>
-      </div>
-
-      {/* Filter Bar */}
-      <div className="mb-5">
-        <FilterBar
-          availableAccounts={availableAccounts}
-          filters={filters}
-          onChange={setFilters}
-        />
       </div>
 
       {/* KPI Grid */}
@@ -734,8 +719,24 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Brand Performance Table */}
-      <BrandTable brands={filteredBrands} columns={columns} onColumnsChange={setColumns} dateRange={dateRange} />
+      {/* Filter Bar + Brand Performance Table */}
+      <div className="card-metric">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-sm font-semibold text-geeko-navy">Performance by Brand</h3>
+            <p className="text-[10px] text-slate-400">Click row to expand campaigns</p>
+          </div>
+          <ColumnCustomizer columns={columns} onChange={setColumns} />
+        </div>
+        <div className="mb-4 pb-4 border-b border-slate-100">
+          <FilterBar
+            availableAccounts={availableAccounts}
+            filters={filters}
+            onChange={setFilters}
+          />
+        </div>
+        <BrandTableContent brands={filteredBrands} columns={columns} dateRange={dateRange} campaignFilter={filters.campaignName} />
+      </div>
     </div>
   );
 }

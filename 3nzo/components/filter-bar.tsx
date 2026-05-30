@@ -9,6 +9,7 @@ export interface FilterState {
   minSpend: number | null;
   maxSpend: number | null;
   searchQuery: string;
+  campaignName: string;
 }
 
 interface FilterBarProps {
@@ -23,6 +24,7 @@ export const defaultFilters: FilterState = {
   minSpend: null,
   maxSpend: null,
   searchQuery: "",
+  campaignName: "",
 };
 
 function MultiSelectDropdown({
@@ -134,7 +136,8 @@ export function FilterBar({ availableAccounts, filters, onChange }: FilterBarPro
     (filters.status.length > 0 ? 1 : 0) +
     (filters.minSpend !== null ? 1 : 0) +
     (filters.maxSpend !== null ? 1 : 0) +
-    (filters.searchQuery ? 1 : 0);
+    (filters.searchQuery ? 1 : 0) +
+    (filters.campaignName ? 1 : 0);
 
   const clearAllFilters = () => onChange(defaultFilters);
 
@@ -175,7 +178,18 @@ export function FilterBar({ availableAccounts, filters, onChange }: FilterBarPro
           placeholder="Search brands..."
           value={filters.searchQuery}
           onChange={(e) => onChange({ ...filters, searchQuery: e.target.value })}
-          className="pl-7 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white w-40 focus:outline-none focus:border-geeko-teal focus:ring-1 focus:ring-geeko-teal/20"
+          className="pl-7 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white w-36 focus:outline-none focus:border-geeko-teal focus:ring-1 focus:ring-geeko-teal/20"
+        />
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
+        <input
+          type="text"
+          placeholder="Campaign contains..."
+          value={filters.campaignName}
+          onChange={(e) => onChange({ ...filters, campaignName: e.target.value })}
+          className="pl-7 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-white w-44 focus:outline-none focus:border-geeko-teal focus:ring-1 focus:ring-geeko-teal/20"
         />
       </div>
 
