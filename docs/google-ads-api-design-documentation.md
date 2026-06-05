@@ -8,13 +8,21 @@
 Geeko Digital Media
 
 ## Business Model
-Geeko Digital Media is a digital marketing agency specializing in paid media management for franchise and multi-location businesses. We manage Google Ads accounts for several clients including:
+Geeko Digital Media is a digital marketing agency specializing in paid media management for franchise and multi-location businesses. 
 
-- **Radiant Waxing** (Customer ID: 700-880-1468)
-- **Amazing Lash Studio** (Customer ID: 518-439-8848)
-- **Drybar** (Customer ID: 569-257-6556)
-- **The Joint Chiropractic** (Customer ID: 480-594-1762) — MCC with 109 franchise locations
-- **Paused Studio** (Customer ID: 945-653-4996)
+**MCC:** Geeko Digital Media - MCC (Customer ID: 503-015-3115)
+
+**Current Accounts Under Management:**
+- **9 Dots - Ads Grant** (Customer ID: 921-382-6651) — Google Ad Grants nonprofit account
+- **9 Dots** (Customer ID: 285-964-4846)
+- **Geeko Digital Media** (Customer ID: 373-401-0058)
+
+**Upcoming Client Accounts (OTT - Onboarding in Progress):**
+- Radiant Waxing
+- Amazing Lash Studio
+- Drybar
+- The Joint Chiropractic — MCC with 109 franchise locations
+- Pause Studio
 
 All accounts are owned by our clients and managed under our agency's MCC (Manager Account). We only manage Google Ads for contracted clients and do not resell API access to third parties.
 

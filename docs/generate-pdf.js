@@ -26,13 +26,24 @@ doc.moveDown(1);
 // Business Model
 doc.fontSize(16).font('Helvetica-Bold').text('Business Model');
 doc.fontSize(11).font('Helvetica')
-   .text('Geeko Digital Media is a digital marketing agency specializing in paid media management for franchise and multi-location businesses. We manage Google Ads accounts for several clients including:', { lineGap: 4 });
+   .text('Geeko Digital Media is a digital marketing agency specializing in paid media management for franchise and multi-location businesses.', { lineGap: 4 });
 doc.moveDown(0.5);
-doc.text('• Radiant Waxing (Customer ID: 700-880-1468)', { indent: 20 });
-doc.text('• Amazing Lash Studio (Customer ID: 518-439-8848)', { indent: 20 });
-doc.text('• Drybar (Customer ID: 569-257-6556)', { indent: 20 });
-doc.text('• The Joint Chiropractic (Customer ID: 480-594-1762) — MCC with 109 franchise locations', { indent: 20 });
-doc.text('• Paused Studio (Customer ID: 945-653-4996)', { indent: 20 });
+doc.font('Helvetica-Bold').text('MCC: ', { continued: true });
+doc.font('Helvetica').text('Geeko Digital Media - MCC (Customer ID: 503-015-3115)');
+doc.moveDown(0.5);
+doc.font('Helvetica-Bold').text('Current Accounts Under Management:');
+doc.font('Helvetica')
+   .text('• 9 Dots - Ads Grant (Customer ID: 921-382-6651) — Google Ad Grants nonprofit account', { indent: 20 })
+   .text('• 9 Dots (Customer ID: 285-964-4846)', { indent: 20 })
+   .text('• Geeko Digital Media (Customer ID: 373-401-0058)', { indent: 20 });
+doc.moveDown(0.5);
+doc.font('Helvetica-Bold').text('Upcoming Client Accounts (OTT - Onboarding in Progress):');
+doc.font('Helvetica')
+   .text('• Radiant Waxing', { indent: 20 })
+   .text('• Amazing Lash Studio', { indent: 20 })
+   .text('• Drybar', { indent: 20 })
+   .text('• The Joint Chiropractic — MCC with 109 franchise locations', { indent: 20 })
+   .text('• Pause Studio', { indent: 20 });
 doc.moveDown(0.5);
 doc.text('All accounts are owned by our clients and managed under our agency\'s MCC (Manager Account). We only manage Google Ads for contracted clients and do not resell API access to third parties.');
 doc.moveDown(1);
