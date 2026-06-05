@@ -261,6 +261,9 @@ doc.font('Helvetica')
    .text('• campaigns.png — Expanded brand row showing individual campaigns', { indent: 20 })
    .text('• chat.png — AI Chat interface with natural language query', { indent: 20 })
    .text('• filters.png — Google Ads-style filters for accounts and campaigns', { indent: 20 });
+doc.moveDown(0.5);
+doc.fontSize(10).font('Helvetica-Oblique')
+   .text('Note: Screenshots show data from client accounts (OTT) currently being onboarded to our MCC.', { indent: 20 });
 doc.moveDown(1);
 
 // Contact Information

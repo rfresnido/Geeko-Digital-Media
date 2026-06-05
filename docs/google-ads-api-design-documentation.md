@@ -199,6 +199,8 @@ WHERE segments.date DURING LAST_7_DAYS
 
 ![Filters](screenshots/filters.png)
 
+> *Note: Screenshots show data from client accounts (OTT) currently being onboarded to our MCC.*
+
 ### Campaign Management (Planned)
 *Interface for pausing campaigns, adjusting budgets, and modifying bids with confirmation dialogs.*
 
